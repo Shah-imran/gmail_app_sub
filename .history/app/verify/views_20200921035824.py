@@ -1,0 +1,9 @@
+from flask import render_template, redirect, request, url_for, flash
+from . import verify
+from ..models import User
+
+
+@auth.route('/', methods=['POST'])
+def login():
+    print("posted")
+

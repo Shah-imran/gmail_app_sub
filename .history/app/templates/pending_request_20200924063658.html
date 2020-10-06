@@ -1,0 +1,28 @@
+{% extends "base.html" %}{% set active_page='pending_request' %}
+
+{% block title %}GMonster-Pending Requests{% endblock %}
+
+{% block page_content %}
+<div class="table table-responsive-sm">
+    <table id="customers" class="table table-striped table-sm table-bordered">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Machine UUID</th>
+                <th class="text-center">Processor ID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sub in subscribers.items %}
+            <tr id="row5">
+                <td>{{ sub.email }}</td>
+                <td>{{ sub.machine_uuid }}</td>
+                <td>{{ sub.processor_id }}</td>
+            </tr>
+
+        </tbody>
+    </table>
+    {% if sub.has_prev %}<a href="{{ url_for('main.pending_request', page=sub.prev_num) }}">&lt;&lt; Prev</a>{% endif %}
+    {% if sub.has_next %}<a href="{{ url_for('main.pending_request', page=sub.prev_num) }}">&lt;&lt; Prev</a>{% endif %}
+</div>
+{% endblock %}

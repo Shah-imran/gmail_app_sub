@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% set active_page='pending_request' %}
+
+{% block title %}GMonster{% endblock %}
+
+{% block page_content %}
+<div class="table table-responsive-sm">
+    <table id="customers" class="table table-striped table-sm table-bordered">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Email</th>
+                <th class="text-center">Telephone No.</th>
+                <th class="text-center">Joined</th>
+                <th class="text-center">Trainer ID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sub in subscribers.items %}
+            <tr id="row5">
+
+            </tr>
+
+        </tbody>
+    </table>
+{% endblock %}
