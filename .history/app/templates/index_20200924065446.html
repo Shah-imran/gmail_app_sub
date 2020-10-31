@@ -1,9 +1,0 @@
-{% extends "base.html" %}
-
-{% block title %}GMonster{% endblock %}
-
-{% block page_content %}
-<div class="page-header">
-    <h1>Hello, {% if not current_user.is_authenticated %}Stranger{% endif %}!</h1>
-</div>
-{% endblock %}

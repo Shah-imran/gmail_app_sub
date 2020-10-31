@@ -13,7 +13,7 @@ def index():
 @verify.route('/register', methods=['POST'])
 def register():
     # print(request.json)
-    if not Subscriber.query.filter_by(email=request.json['email']).first():
+    if not db.session.query(Subscriber).filter_by(email=request.json['email']).first():
         sub = Subscriber(email=request.json['email'],
                         password=request.json['password'],
                         machine_uuid=request.json['machine_uuid'],
@@ -28,7 +28,7 @@ def register():
 @verify.route('/login', methods=['POST'])
 def login():
     # print(request.json)
-    sub = Subscriber.query.filter_by(email=request.json['email']).first()
+    sub = db.session.query(Subscriber).filter_by(email=request.json['email']).first()
     if sub:
         if (sub.email==request.json['email']
             and sub.verify_password(request.json['password'])==True
@@ -44,6 +44,8 @@ def login():
             db.session.add(sub)
             db.session.commit()
             return "Success"
+        else:
+            return "Password or Machine doesn't match"
     else:
         return "Not registered"
 

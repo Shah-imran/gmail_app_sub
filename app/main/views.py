@@ -20,7 +20,7 @@ def pending_request(page):
     per_page = current_app.config["PER_PAGE_PAGINATION"]
     # subscribers = Subscriber.query.filter_by(
     #     active=False).paginate(page,per_page,error_out=False)
-    subscribers = Subscriber.query.paginate(page,per_page,error_out=False)
+    subscribers = db.session.query(Subscriber).paginate(page,per_page,error_out=False)
     return render_template('pending_request.html', subscribers=subscribers, page=page)
 
 
@@ -29,14 +29,14 @@ def pending_request(page):
 @login_required
 def active_user(page):
     per_page = current_app.config["PER_PAGE_PAGINATION"]
-    subscribers = Subscriber.query.filter_by(
+    subscribers = db.session.query(Subscriber).filter_by(
         active=True).paginate(page,per_page,error_out=False)
     return render_template('active_user.html', subscribers=subscribers, page=page)
 
 @main.route('/activate_user/<string:end_date>/<int:id>', methods=['POST'])
 @login_required
 def activate_user(end_date, id):
-    sub = Subscriber.query.get(id)
+    sub = db.session.query(Subscriber).get(id)
     if not sub:
         return jsonify({'message': 'User not found!'}), 401
     sub.end_date = datetime.strptime(end_date, '%Y-%m-%d')
@@ -49,7 +49,7 @@ def activate_user(end_date, id):
 @main.route('/change_subscription/<string:end_date>/<int:id>', methods=['POST'])
 @login_required
 def change_subscription(end_date, id):
-    sub = Subscriber.query.get(id)
+    sub = db.session.query(Subscriber).get(id)
     if not sub:
         return jsonify({'message': 'User not found!'}), 401
     sub.end_date = datetime.strptime(end_date, '%Y-%m-%d')
@@ -61,7 +61,7 @@ def change_subscription(end_date, id):
 @main.route('/delete_user/<int:id>', methods=['DELETE'])
 @login_required
 def delete_user(id):
-    sub = Subscriber.query.get(id)
+    sub = db.session.query(Subscriber).get(id)
     if not sub:
         return jsonify({'message': 'User not found!'}), 401
     db.session.delete(sub)
@@ -71,7 +71,7 @@ def delete_user(id):
 @main.route('/deactivate_user/<int:id>', methods=['POST'])
 @login_required
 def deactivate_user(id):
-    sub = Subscriber.query.get(id)
+    sub = db.session.query(Subscriber).get(id)
     if not sub:
         return jsonify({'message': 'User not found!'}), 401
     sub.active = False
