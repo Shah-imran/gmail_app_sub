@@ -62,6 +62,14 @@ class Subscriber(db.Model):
     def __repr__(self):
         return '<User %r>' % self.email
 
+class Version(db.Model):
+    __tablename__= 'version'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True, index=True)
+    link = db.Column(db.Text)
+    size = db.Column(db.Integer)
+    download = db.Column(db.Integer, nullable=False, default=0)
+
 
 @login_manager.user_loader
 def load_user(user_id):
