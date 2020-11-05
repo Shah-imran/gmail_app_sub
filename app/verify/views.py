@@ -49,6 +49,28 @@ def login():
     else:
         return "Not registered"
 
+@verify.route('/check_for_subscription/<string:email>', methods=['POST'])
+def check_for_subscription(email):
+    if email:
+        sub = db.session.query(Subscriber).filter_by(email=email).first()
+        if sub:
+            if sub.end_date<datetime.utcnow().date():
+                return jsonify({"status": 2,
+                                "end_date": sub.date_to_string(sub.end_date)
+                                }), 200
+
+            elif sub.active==False:
+                return jsonify({"status": 3,
+                                "end_date": sub.date_to_string(sub.end_date)
+                                }), 200
+            else:
+                delta = sub.end_date - datetime.utcnow().date()
+                return jsonify({"status": 1,
+                                "days_left": delta.days
+                    }), 200
+
+    return jsonify({"status": 0}), 200
+
 @verify.route('/version', methods=['GET'])
 def version():
     version = db.session.query(Version).order_by(Version.id.desc()).first()
