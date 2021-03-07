@@ -73,6 +73,14 @@ class Version(db.Model):
     size = db.Column(db.Integer)
     download = db.Column(db.Integer, nullable=False, default=0)
 
+class WUM_Version(db.Model):
+    __tablename__= 'wum_version'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True, index=True)
+    link = db.Column(db.Text)
+    size = db.Column(db.Integer)
+    download = db.Column(db.Integer, nullable=False, default=0)
+
 
 @login_manager.user_loader
 def load_user(user_id):

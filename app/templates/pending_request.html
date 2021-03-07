@@ -4,6 +4,7 @@
 
 {% block page_content %}
 <div class="container-fluid mx-2 my-1">
+    <h4 class="text-center">GMonster</h4>
     <form id="upload_form" class="col-md-12 mx-auto my-2">
         <div class="form-row my-1">
             <div class="col-md-2 form-group">
@@ -22,7 +23,7 @@
                 <!-- </div> -->
             </div>
             <div class="col-md-2 form-group">
-                <label for="download">Download :</label>
+                <label for="download">Download</label>
                 <span id="download" class="form-control">
                 </span>
             </div>
@@ -30,6 +31,38 @@
         <div class="form-row my-1">
             <div class="col-md-12 form-group">
                 <button id="update" type="button" class="btn btn-primary float-right">Update</button>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="container-fluid mx-2 my-1">
+    <h4 class="text-center">WUM</h4>
+    <form id="wum_upload_form" class="col-md-12 mx-auto my-2">
+        <div class="form-row my-1">
+            <div class="col-md-2 form-group">
+                <label for="wum_name_input">Version</label>
+                <input id="wum_name_input" type="text" placeholder="Enter Name" class="form-control">
+            </div>
+            <div class="col-md-6 form-group">
+                <label for="wum_link_input">Link</label>
+                <input id="wum_link_input" type="text" placeholder="Enter Link" class="form-control">
+            </div>
+            <div class="col-md-2 form-group">
+                <label for="wum_size_input">Size</label>
+                <input id="wum_size_input" type="number" placeholder="Enter Size" class="form-control">
+                <!-- <div class="input-group-append"> -->
+                    <!-- <span class="input-group-text" id="basic-addon2">kb</span> -->
+                <!-- </div> -->
+            </div>
+            <div class="col-md-2 form-group">
+                <label for="wum_download">Download</label>
+                <span id="wum_download" class="form-control">
+                </span>
+            </div>
+        </div>
+        <div class="form-row my-1">
+            <div class="col-md-12 form-group">
+                <button id="wum_update" type="button" class="btn btn-primary float-right">Update</button>
             </div>
         </div>
     </form>
@@ -175,7 +208,7 @@
 
             // Extract JSON data from request
             const data = JSON.parse(request.responseText);
-            console.log(data.message)
+            // console.log(data.message)
             alert(data.message)
             if (request.status===200){
                 window.location.reload(false);
@@ -196,7 +229,7 @@
             "link": link,
             "size": size
         }
-        console.log(criteria)
+        // console.log(criteria)
         const request_update = new XMLHttpRequest();
         request_update.open('PUT', '/verify/version', true);
         request_update.setRequestHeader("Content-Type", "application/json");
@@ -204,7 +237,7 @@
 
             // Extract JSON data from request
             const data = JSON.parse(request_update.responseText);
-            console.log(data)
+            // console.log(data)
             if (request_update.status===200){
                 alert(data.status)
                 window.location.reload(false);
@@ -224,7 +257,7 @@
 
             // Extract JSON data from request
             const data = JSON.parse(request.responseText);
-            console.log(data)
+            // console.log(data)
             if (request.status===200){
                 // window.location.reload(false);
                 if (data.exists==true){
@@ -232,6 +265,63 @@
                     document.getElementById("link_input").value = data.link;
                     document.getElementById("size_input").value = data.size;
                     document.getElementById("download").innerText = data.download;
+                }
+            }
+        }
+
+
+        // Send request
+        request.send();
+
+    });
+
+    //wum_version
+
+    document.getElementById("wum_update").addEventListener("click", function (event) {
+        name = document.getElementById("wum_name_input").value;
+        link = document.getElementById("wum_link_input").value;
+        size = document.getElementById("wum_size_input").value;
+        criteria = {
+            "name": name,
+            "link": link,
+            "size": size
+        }
+        // console.log(criteria)
+        const request_update = new XMLHttpRequest();
+        request_update.open('PUT', '/verify/wum_version', true);
+        request_update.setRequestHeader("Content-Type", "application/json");
+        request_update.onload = () => {
+
+            // Extract JSON data from request
+            const data = JSON.parse(request_update.responseText);
+            console.log(data)
+            if (request_update.status===200){
+                alert(data.status)
+                window.location.reload(false);
+            }
+        }
+
+
+        // Send request
+        request_update.send(JSON.stringify(criteria));
+    });
+    
+    document.addEventListener("DOMContentLoaded", function (event) {
+        const request = new XMLHttpRequest();
+        request.open('GET', '/verify/wum_version', true);
+        // request.setRequestHeader("Content-Type", "application/json");
+        request.onload = () => {
+
+            // Extract JSON data from request
+            const data = JSON.parse(request.responseText);
+            // console.log(data)
+            if (request.status===200){
+                // window.location.reload(false);
+                if (data.exists==true){
+                    document.getElementById("wum_name_input").value = data.name;
+                    document.getElementById("wum_link_input").value = data.link;
+                    document.getElementById("wum_size_input").value = data.size;
+                    document.getElementById("wum_download").innerText = data.download;
                 }
             }
         }
