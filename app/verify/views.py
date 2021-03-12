@@ -28,6 +28,18 @@ def register():
 @verify.route('/login', methods=['POST'])
 def login():
     # print(request.json)
+    data = request.json
+    if 'version' in data:
+        if request.json['type'] == 'main':
+            version = db.session.query(Version).order_by(Version.id.desc()).first()
+        else:
+            version = db.session.query(WUM_Version).order_by(WUM_Version.id.desc()).first()
+    else:
+        return "Use the latest version!!!"
+
+    if version.name != request.json['version']:
+        return "You are using v{} but you need to use v{} !!!".format(request.json['version'], version.name)
+
     sub = db.session.query(Subscriber).filter_by(email=request.json['email']).first()
     if sub:
         if (sub.email==request.json['email']
