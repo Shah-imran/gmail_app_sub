@@ -47,16 +47,6 @@ def get_all_users():
 
     data = []
     for item in subscribers:
-        # data.append(
-        #     [
-        #         item.email, 
-        #         item.machine_uuid, 
-        #         item.processor_id,
-        #         item.active,
-        #         True,
-        #         item.id  
-        #     ]
-        # )
 
         data.append({
             "email": item.email,
@@ -86,6 +76,35 @@ def active_user(page):
         active=True).paginate(page, per_page, error_out=False)
     return render_template('active_user.html', subscribers=subscribers, page=page)
 
+
+@main.route('/active_users', methods=['GET'])
+@login_required
+def get_all_active_users():
+    subscribers: Subscriber = db.session.query(Subscriber).filter_by(
+        active=True).all()
+
+    if not subscribers:
+        return jsonify({"result": "No results"}), 404
+
+    data = []
+    for item in subscribers:
+
+        data.append({
+            "email": item.email,
+            "machine_uuid": item.machine_uuid,
+            "processor_id": item.processor_id,
+            "deactivate": {
+                "id": item.id,
+                "end_date": str(item.end_date)
+            },
+            "last_sign_in": str(item.last_sign_in),
+            "end_date": str(item.end_date)
+        })
+
+    return jsonify({
+        "result": "ok",
+        "data": data
+    }), 200
 
 @main.route('/activate_user/<string:end_date>/<int:id>', methods=['POST'])
 @login_required
