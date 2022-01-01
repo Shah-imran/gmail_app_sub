@@ -18,9 +18,6 @@
             <div class="col-md-2 form-group">
                 <label for="size_input">Size</label>
                 <input id="size_input" type="number" placeholder="Enter Size" class="form-control">
-                <!-- <div class="input-group-append"> -->
-                    <!-- <span class="input-group-text" id="basic-addon2">kb</span> -->
-                <!-- </div> -->
             </div>
             <div class="col-md-2 form-group">
                 <label for="download">Download</label>
@@ -79,30 +76,8 @@
             </tr>
         </thead>
         <tbody>
-            {% for sub in subscribers.items %}
-            <tr id="row5">
-                <td class="text-center">{{ sub.email }}</td>
-                <td class="text-center">{{ sub.machine_uuid }}</td>
-                <td class="text-center">{{ sub.processor_id }}</td>
-                <td class="text-center">
-                {% if sub.active == False %}
-                    <button id="{{ sub.id }}" onclick="change_modal(this)" data-type="activate" type="button" class="btn btn-primary activate" data-toggle="modal" data-target="#activation_window" data-id="{{ sub.id }}">
-                    Activate
-                    </button>
-                {% endif %}
-                </td>
-                <td class="text-center">
-                    <button id="{{ sub.id }}" onclick="change_modal(this)" data-type="delete" type="button" class="btn btn-warning delete" data-id="{{ sub.id }}" data-toggle="modal" data-target="#delete_window">
-                    Delete
-                    </button>
-                </td>
-            </tr>
-            {% endfor %}
         </tbody>
     </table>
-    {% if subscribers.has_prev %}<a href="{{ url_for('main.pending_request', page=subscribers.prev_num) }}">&lt;&lt; Prev</a>{% endif %}
-    {% if page>=2 %}<a href="{{ url_for('main.pending_request', page=page) }}">&nbsp;&nbsp;{{ page }}&nbsp;&nbsp;</a>{% endif %}
-    {% if subscribers.has_next %}<a href="{{ url_for('main.pending_request', page=subscribers.next_num) }}">Next &gt;&gt;</a>{% endif %}
 </div>
 <div class="modal fade" id="activation_window" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -331,6 +306,97 @@
         request.send();
 
     });
+
+    function toObject(arr) {
+        var rv = [];
+        for (var i = 0; i < arr.length; ++i)
+            rv[i] = arr[i];
+        return rv;
+    }
+
+    document.addEventListener("DOMContentLoaded", function (event) {
+        const request = new XMLHttpRequest();
+        request.open('GET', '/pending_request/all-users', true);
+        // request.setRequestHeader("Content-Type", "application/json");
+        request.onload = () => {
+
+            // Extract JSON data from request
+            const data = JSON.parse(request.responseText);
+
+            if (request.status===200){
+                t_data = toObject(data['data'])
+
+                $.fn.dataTable.ext.errMode = 'none';
+                $('#customers').DataTable(
+                    {
+                        data: t_data,
+                        columns: [
+                            { 
+                                data: 'email',
+                                searchable: true
+                            },
+                            { 
+                                data: 'machine_uuid' ,
+                                searchable: false
+                            },
+                            { 
+                                data: 'processor_id',
+                                searchable: false
+                            },
+                            { 
+                                data: 'active',
+                                searchable: false,
+                                render: function ( data, type, row ) {
+                                    if ( data.active === false ) {
+                                        return `<button id="${data.id}" onclick="change_modal(this)" data-type="activate" type="button" class="btn btn-primary activate" data-toggle="modal" data-target="#activation_window" data-id="${data.id}">Activate</button>`
+                                    } else {
+                                        return
+                                    }     
+                                }
+                            },
+                            { 
+                                data: 'delete' ,
+                                searchable: false,
+                                render: function ( data, type, row ) {
+                                    return `<button id="${data.id}" onclick="change_modal(this)" data-type="delete" type="button" class="btn btn-warning delete" data-id="${data.id}" data-toggle="modal" data-target="#delete_window">Delete</button>`
+                                }
+                            }
+                        ],
+                        columnDefs: [
+                            {
+                                targets: 0,
+                                className: 'dt-body-center'
+                            },
+                            {
+                                targets: 1,
+                                className: 'dt-body-center'
+                            },
+                            {
+                                targets: 2,
+                                className: 'dt-body-center'
+                            },
+                            {
+                                targets: 3,
+                                className: 'dt-body-center'
+                            },
+                            {
+                                targets: 4,
+                                sorting: false,
+                                className: 'dt-body-center'
+                            }
+                        ]
+                    }
+                ); 
+            }
+        }
+
+
+        // Send request
+        request.send();
+
+    });
+
+    
 
 </script>
 {% endblock %}
