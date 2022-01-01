@@ -325,7 +325,7 @@
 
             if (request.status===200){
                 t_data = toObject(data['data'])
-                console.log(t_data)
+                
                 $.fn.dataTable.ext.errMode = 'none';
                 $('#customers').DataTable(
                     {
