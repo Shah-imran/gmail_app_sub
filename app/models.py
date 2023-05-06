@@ -1,13 +1,19 @@
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import Column, Date, Integer, Boolean, DateTime, String, Text, ForeignKey, UniqueConstraint
+from sqlalchemy.schema import FetchedValue
+from sqlalchemy.sql import func
 from flask_login import UserMixin
-from . import db, login_manager
 import datetime
+import uuid
+
+from . import db, login_manager
 
 
 class Role(db.Model):
     __tablename__ = 'roles'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), unique=True)
+    id = Column(Integer, primary_key=True)
+    name = Column(String(64), nullable=False, unique=True)
+
     users = db.relationship('User', backref='role', lazy='dynamic')
 
     def __repr__(self):
@@ -16,11 +22,18 @@ class Role(db.Model):
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(64), unique=True, index=True)
-    username = db.Column(db.String(64), unique=True, index=True)
-    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
-    password_hash = db.Column(db.String(128))
+    id = Column(Integer, primary_key=True)
+    email = Column(String(64), nullable=False, unique=True, index=True)
+    username = Column(String(64), nullable=False, unique=True, index=True)
+    active = Column(Boolean, nullable=False, default=False)
+    password_hash = Column(String(128))
+    sub_end_date = Column(Date, default=None)
+    last_sign_in = Column(DateTime(timezone=True), nullable=True)
+    time_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    activation_code = Column(String(128), nullable=True, default=None)
+
+    role_id = Column(Integer, db.ForeignKey('roles.id'))
+    servers = db.relationship('Server', backref='user', lazy='dynamic')
 
     @property
     def password(self):
@@ -34,52 +47,40 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return f"User {self.username} {self.email}"
 
 
-class Subscriber(db.Model):
-    __tablename__ = 'subscribers'
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(64), unique=True, index=True)
-    password_hash = db.Column(db.String(128))
-    machine_uuid = db.Column(db.String(128))
-    processor_id = db.Column(db.String(128))
-    end_date = db.Column(db.Date())
-    active = db.Column(db.Boolean(), default=False)
-    last_sign_in = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
+class Subscription(db.Model):
+    __tablename__ = 'subscriptions'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(64), nullable=False, unique=True)
+    active = Column(Boolean, default=False)
+    device_count = Column(Integer, default=0)
+    description = Column(Text, nullable=False)
+    time_created = Column(DateTime(timezone=True), server_default=func.now())
+    time_updated = Column(DateTime(timezone=True), onupdate=func.now())
 
-    @property
-    def password(self):
-        raise AttributeError('password is not a readable attribute')
-
-    @password.setter
-    def password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
+    servers = db.relationship('Server', backref='sub_type', lazy='dynamic')
 
     def date_to_string(self, date):
         return date.strftime("%m-%d-%Y")
 
     def __repr__(self):
-        return '<User %r>' % self.email
+        return f"Subscription {self.name} {self.device_count} {self.description}"
+    
 
-class Version(db.Model):
-    __tablename__= 'version'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), unique=True, index=True)
-    link = db.Column(db.Text)
-    size = db.Column(db.Integer)
-    download = db.Column(db.Integer, nullable=False, default=0)
+class Server(db.Model):
+    __tablename__ = "servers"
+    id = Column(Integer, primary_key=True)
+    ip_address = Column(String(16), nullable=False, unique=True)
+    active = Column(Boolean, default=False, nullable=False)
+    assigned = Column(Boolean, default=False, nullable=False)
+    description = Column(Text, nullable=True)
+    time_created = Column(DateTime(timezone=True), server_default=func.now())
+    time_updated = Column(DateTime(timezone=True), onupdate=func.now())
 
-class WUM_Version(db.Model):
-    __tablename__= 'wum_version'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), unique=True, index=True)
-    link = db.Column(db.Text)
-    size = db.Column(db.Integer)
-    download = db.Column(db.Integer, nullable=False, default=0)
+    user_id = Column(Integer, db.ForeignKey('users.id'), nullable=True)
+    subs_id = Column(Integer, db.ForeignKey('subscriptions.id'), nullable=True)
 
 
 @login_manager.user_loader

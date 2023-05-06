@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Activation{% endblock %}
+
+{% block page_content_t %}
+<div class="row">
+    <div class="col-lg-15 mx-auto">
+        <div class="card card-signin my-5">
+            <div class="card-body">
+            <h1 class="text-center">Activate, <a>{{username}}</a></h1>
+                <form class="form-signin" method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ form.activattion_code.label(class="form-control-label") }} {{ form.activattion_code(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.submit(class="btn btn-primary btn-block") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

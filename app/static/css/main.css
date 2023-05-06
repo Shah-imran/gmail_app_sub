@@ -1,3 +1,6 @@
+* {
+    font-family: 'FontAwesome' !important;
+}
 body {
     background: #fafafa;
     color: #333333;
