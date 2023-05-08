@@ -1,5 +1,5 @@
 from flask import render_template, redirect, request, url_for, flash
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 from datetime import datetime, timezone
 import pytz
 from uuid import uuid4
@@ -13,6 +13,9 @@ from app.auth.services import get_user_by_email, get_user_by_username
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+
+    if current_user.is_authenticated:
+        return redirect(url_for('main.all_users'))
     
     if form.validate_on_submit():
         user: User = db.session.query(User).filter_by(email=form.email.data.lower()).first()
@@ -32,13 +35,18 @@ def login():
         
         flash('Invalid email or password.')
     else:
-        flash('Please fill out the form properly!!!')
+        if request.method != 'GET':
+            flash('Please fill out the form properly!!!')
+    
     return render_template('auth/login.html', form=form)
 
 
 @auth.route('/registration', methods=['GET', 'POST'])
 def registration():
     form = RegisrationForm(request.form)
+
+    if current_user.is_authenticated:
+        return redirect(url_for('main.all_users'))
 
     if request.method == 'POST' and form.validate():
         user = User()
@@ -48,20 +56,20 @@ def registration():
         user.last_sign_in = datetime.utcnow().replace(tzinfo=pytz.utc)
         user.activation_code = str(uuid4())
 
-        role = db.session.query(Role).get(1)
+        role = db.session.query(Role).get(2)
         user.role = role
 
         db.session.add(user)
         db.session.commit()
-
-
 
         flash('Successfully Registered. A mail has been sent please check your mailbox!!!')
 
         return redirect(url_for('auth.activate', username=user.username))
 
     else:
-        flash("Internal System error")
+        if request.method != 'GET':
+            flash("Internal System error")
+
     return render_template('auth/registration.html', form=form)
 
 
@@ -77,7 +85,7 @@ def activate(username):
                 db.session.add(user)
                 db.session.commit()
 
-                return redirect(url_for('auth.index'))
+                return redirect(url_for('auth.login'))
             else:
                 flash("Wrong Activation Code. Try again!!!")
         else:

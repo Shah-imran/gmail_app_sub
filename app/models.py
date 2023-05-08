@@ -14,7 +14,7 @@ class Role(db.Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(64), nullable=False, unique=True)
 
-    users = db.relationship('User', backref='role', lazy='dynamic')
+    users = db.relationship('User', backref='role', lazy='dynamic', passive_deletes=False)
 
     def __repr__(self):
         return '<Role %r>' % self.name
@@ -27,13 +27,12 @@ class User(UserMixin, db.Model):
     username = Column(String(64), nullable=False, unique=True, index=True)
     active = Column(Boolean, nullable=False, default=False)
     password_hash = Column(String(128))
-    sub_end_date = Column(Date, default=None)
     last_sign_in = Column(DateTime(timezone=True), nullable=True)
     time_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     activation_code = Column(String(128), nullable=True, default=None)
 
     role_id = Column(Integer, db.ForeignKey('roles.id'))
-    servers = db.relationship('Server', backref='user', lazy='dynamic')
+    servers = db.relationship('Server', backref='user', lazy='dynamic', passive_deletes=False)
 
     @property
     def password(self):
@@ -60,7 +59,7 @@ class Subscription(db.Model):
     time_created = Column(DateTime(timezone=True), server_default=func.now())
     time_updated = Column(DateTime(timezone=True), onupdate=func.now())
 
-    servers = db.relationship('Server', backref='sub_type', lazy='dynamic')
+    servers = db.relationship('Server', backref='sub_type', lazy='dynamic', passive_deletes=False)
 
     def date_to_string(self, date):
         return date.strftime("%m-%d-%Y")
@@ -76,6 +75,7 @@ class Server(db.Model):
     active = Column(Boolean, default=False, nullable=False)
     assigned = Column(Boolean, default=False, nullable=False)
     description = Column(Text, nullable=True)
+    sub_end_date = Column(Date, default=None)
     time_created = Column(DateTime(timezone=True), server_default=func.now())
     time_updated = Column(DateTime(timezone=True), onupdate=func.now())
 

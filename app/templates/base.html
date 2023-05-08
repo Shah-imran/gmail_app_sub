@@ -51,13 +51,14 @@
                     <nav id="sidebarMenu" class="col-md-3 col-sm-12 col-lg-3 col-xl-2 d-md-block sidebar mb-auto">
                         <div class="sidebar-sticky">
                             <ul class="nav flex-column" id="sidebar-item">
+                                
                                 <li class="nav-item-sidebar{{ '-active' if active_page=='active_user' else '' }}">
-                                    <a class="nav-link" href="{{ url_for( 'main.active_user') }}">
+                                    <a class="nav-link" href="{{ url_for( 'main.all_users') }}">
                                         <i class="fa fa-calendar" aria-hidden="true"></i>&nbsp; &nbsp; Active Users
                                     </a>
-                                </li>
-                                <li class="nav-item-sidebar{{ '-active' if active_page == 'pending_request' else '' }}">
-                                    <a class="nav-link" href="{{ url_for('main.pending_request') }}">
+                                </li> 
+                                <li class="nav-item-sidebar{{ '-active' if active_page == 'all_users' else '' }}">
+                                    <a class="nav-link" href="{{ url_for('main.all_users') }}">
                                         <i class="fa fa-book" aria-hidden="true"></i>&nbsp; &nbsp; All Users
                                     </a>
                                 </li>
@@ -87,7 +88,7 @@
             </div>
         </div>
     </main>
-    {% block page_content_t %}{% endblock %}s
+    {% block page_content_t %}{% endblock %}
 </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
