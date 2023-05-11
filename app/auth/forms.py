@@ -19,6 +19,7 @@ class RegisrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(1, 64)])
     password = PasswordField('Password', validators=[DataRequired()])
     re_password = PasswordField('Re-password', validators=[DataRequired(), EqualTo('password')])
+    accept_tos = BooleanField('I accept the TOS', validators=[DataRequired()])
     submit = SubmitField('Sign Up')
 
     def validate_username(self, username):
@@ -32,6 +33,11 @@ class RegisrationForm(FlaskForm):
         if user:
             flash('That email is taken. Please choose another.')
             raise ValidationError('That email is taken. Please choose another.')
+        
+    def validate_accept_tos(self, accept_tos):
+        if not accept_tos.data:
+            flash('Please accept Terms & Conditions')
+            raise ValidationError('Please accept Terms & Conditions')
         
 
 class ActivationForm(FlaskForm):

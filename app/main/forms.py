@@ -2,7 +2,12 @@ from flask_wtf import FlaskForm
 from flask import flash
 from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError
 from wtforms.validators import DataRequired, Email, Length, EqualTo
-from app.auth.services import get_user_by_email, get_user_by_username
+from app.auth.services import (
+    get_user_by_email, 
+    get_user_by_username
+)
+
+from app.main.services import get_one_server
 
 
 class UserCreationForm(FlaskForm):
@@ -28,6 +33,12 @@ class UserCreationForm(FlaskForm):
 
 class ServerCreationForm(FlaskForm):
     ip_address = StringField('IP Address', validators=[DataRequired(), Length(1, 16)])
-    active = BooleanField('I accept the TOS', validators=[DataRequired()])
     description = StringField('Desciption')
     submit = SubmitField('Sign Up')
+
+    def validate_ip_address(self, ip_address):
+        server = get_one_server(ip_address.data)
+
+        if server:
+            flash('This IP Address already exists.')
+            raise ValidationError('This IP Address already exists.')

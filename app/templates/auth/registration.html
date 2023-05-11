@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "auth/_formhelpers.html" import render_field %}
 
 {% block title %}Registration{% endblock %}
 
@@ -28,6 +29,7 @@
                     <div class="form-group">
                         {{ form.re_password.label(class="form-control-label") }} {{ form.re_password(class="form-control") }}
                     </div>
+                    {{ render_field(form.accept_tos) }}
                     <div class="form-group">
                         {{ form.submit(class="btn btn-primary btn-block") }}
                     </div>

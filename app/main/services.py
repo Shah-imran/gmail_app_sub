@@ -1,9 +1,33 @@
 from flask import jsonify
-
 from .. import config, db
-from app.models import User, Role
+from app.models import User, Role, Server
 
 
+def create_a_server(form):
+    server: Server = Server()
+    server.ip_address = form.ip_address.data
+    server.active = True
+    server.description = form.description.data
+
+    db.session.add(server)
+    db.session.commit()
+
+    return server
+
+def get_all_servers():
+    return True
+
+
+def get_one_server(ip_address):
+    try:
+        server = db.session.query(Server).filter_by(ip_address=ip_address).first()
+    except:
+        import traceback
+        print(traceback.format_exc(), ip_address)
+
+    return server
+
+ 
 def get_all_users():
     role: Role = db.session.query(Role).filter_by(name='User').first()
     users: User = db.session.query(User).filter_by(role_id=role.id).all()

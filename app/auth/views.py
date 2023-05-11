@@ -7,7 +7,7 @@ from . import auth
 from .. import config, db
 from ..models import User, Role
 from .forms import LoginForm, RegisrationForm, ActivationForm
-from app.auth.services import get_user_by_email, get_user_by_username
+from app.auth.services import get_user_by_email, get_user_by_username, create_a_user
 
 
 @auth.route('/login', methods=['GET', 'POST'])
@@ -49,18 +49,7 @@ def registration():
         return redirect(url_for('main.all_users'))
 
     if request.method == 'POST' and form.validate():
-        user = User()
-        user.email = form.email.data
-        user.username = form.username.data
-        user.password = form.password.data
-        user.last_sign_in = datetime.utcnow().replace(tzinfo=pytz.utc)
-        user.activation_code = str(uuid4())
-
-        role = db.session.query(Role).get(2)
-        user.role = role
-
-        db.session.add(user)
-        db.session.commit()
+        user = create_a_user(form)
 
         flash('Successfully Registered. A mail has been sent please check your mailbox!!!')
 
@@ -68,7 +57,7 @@ def registration():
 
     else:
         if request.method != 'GET':
-            flash("Internal System error")
+            flash("Form validation failed.")
 
     return render_template('auth/registration.html', form=form)
 

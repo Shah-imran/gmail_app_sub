@@ -1,6 +1,8 @@
 from flask import render_template, redirect, request, url_for, flash, current_app, jsonify
+from app.auth.services import create_a_user
 from app.main import services
 from app.main import main
+from app.main.forms import UserCreationForm, ServerCreationForm
 from .. import config, db
 from app.models import User, Role
 from flask_login import login_user, logout_user, login_required, current_user
@@ -27,10 +29,20 @@ def index():
     return redirect(url_for('auth.login'))
 
 
-@main.route('/all-users', methods=['GET'])
+@main.route('/all-users', methods=['GET', 'POST'])
 @login_required
 def all_users():
-    return render_template('all_users.html')
+    form = UserCreationForm(request.form)
+
+    if request.method == 'POST' and form.validate():
+        user = create_a_user(form)
+        
+        flash('Successfully Created')
+    else:
+        if request.method != 'GET':
+            flash("Form validation failed.")
+
+    return render_template('all_users.html', form=form)
 
 
 @main.route('/all-users/get-list', methods=['GET'])
@@ -63,6 +75,36 @@ def delete_user(id):
         return jsonify({'message': 'User not found!'}), 401
 
     return jsonify({"message": "User Deleted!"}), 200
+
+
+@main.route('/servers', methods=['GET', 'POST'])
+@login_required
+def servers():
+    form = ServerCreationForm(request.form)
+
+    if request.method == 'POST' and form.validate():
+        server = services.create_a_server(form)
+        
+        flash('Successfully Created a server')
+    else:
+        if request.method != 'GET':
+            flash("Form validation failed.")
+
+    return render_template('servers.html', form=form)
+
+
+@main.route('/servers/get-list', methods=['GET'])
+@login_required
+def get_all_servers(): 
+    servers = services.get_all_servers()
+    
+    if not servers:
+        return jsonify({"message": "No results"}), 404
+    
+    return jsonify({
+        "message": "ok",
+        "data": servers
+    }), 200
 
 
 # @main.route('/active_user', methods=['GET'], defaults={"page": 1})
