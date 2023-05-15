@@ -18,31 +18,27 @@
 </head>
 
 <body>
+    
+    <nav class="navbar navbar-inverse navbar-expand-sm bg-dark py-lg-0">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <img src="{{ url_for('static', filename='icon/logo.png') }}" style="border-radius: 5px;" alt="">
+                <!-- &nbsp;Personal Trainer -->
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-    <header class="site-header">
-        <nav class="navbar navbar-inverse navbar-expand-sm bg-dark">
-            <div class="container">
-                <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                    <img src="{{ url_for('static', filename='icon/logo.png') }}" style="border-radius: 5px;" alt="">
-                    <!-- &nbsp;Personal Trainer -->
-                </a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+        <div class="navbar-collapse collapse" id="navbarSupportedContent">
+            <ul class="nav navbar-nav ml-auto">
+                {% if current_user.is_authenticated %}
+                    <li class="nav-item my-3">
+                        <a href="{{ url_for( 'auth.logout') }}">Logout</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
 
-            <div class="navbar-collapse collapse" id="navbarSupportedContent">
-                <ul class="nav navbar-nav ml-auto">
-                    {% if current_user.is_authenticated %}
-                        <li class="nav-item my-3">
-                            <a href="{{ url_for( 'auth.logout') }}">Logout</a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
-
-            </div>
-        </nav>
-    </header>
     {% if current_user.is_authenticated %}
     <main role="main" class="container-fluid">
         <div class="row">

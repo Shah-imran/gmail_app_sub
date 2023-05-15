@@ -93,7 +93,7 @@ def servers():
     return render_template('servers.html', form=form)
 
 
-@main.route('/servers/get-list', methods=['GET'])
+@main.route('/servers/get-all', methods=['GET'])
 @login_required
 def get_all_servers(): 
     servers = services.get_all_servers()
@@ -105,6 +105,24 @@ def get_all_servers():
         "message": "ok",
         "data": servers
     }), 200
+
+
+@main.route('/change-server-status/<string:flag>/<int:id>', methods=['POST'])
+@login_required
+def change_server_status(flag, id):
+    if not services.change_server_active_status(flag, id):
+        return jsonify({"message": "Server not found"}), 404
+    
+    return jsonify({"message": "Status Changed"}), 200
+
+
+@main.route('/delete-server/<int:id>', methods=['DELETE'])
+@login_required
+def delete_server():
+    if not services.delete_server(id):
+        return jsonify({'message': 'Server not found!'}), 401
+
+    return jsonify({"message": "Server Deleted!"}), 200
 
 
 # @main.route('/active_user', methods=['GET'], defaults={"page": 1})
