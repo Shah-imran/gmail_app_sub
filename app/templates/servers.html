@@ -176,8 +176,11 @@
                                 }
                             },
                             { 
-                                data: 'ip_address' ,
-                                searchable: true
+                                data: 'sub_type' ,
+                                searchable: true,
+                                render: function (data, type, row) {
+                                    return
+                                }
                             },
                             { 
                                 data: 'sub_end_date' ,
