@@ -34,7 +34,7 @@ class UserCreationForm(FlaskForm):
 class ServerCreationForm(FlaskForm):
     ip_address = StringField('IP Address', validators=[DataRequired(), Length(1, 16)])
     description = StringField('Desciption')
-    submit = SubmitField('Sign Up')
+    submit = SubmitField('Create')
 
     def validate_ip_address(self, ip_address):
         server = get_one_server(ip_address.data)
@@ -42,3 +42,10 @@ class ServerCreationForm(FlaskForm):
         if server:
             flash('This IP Address already exists.')
             raise ValidationError('This IP Address already exists.')
+        
+
+class PasswordResetForm(FlaskForm):
+    password = PasswordField('Password', validators=[DataRequired()])
+    re_password = PasswordField('Re-password', validators=[DataRequired(), EqualTo('password')])
+
+    submit = SubmitField('Submit')

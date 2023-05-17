@@ -1,5 +1,6 @@
 from flask import render_template, redirect, request, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
+from sqlalchemy import or_
 from datetime import datetime, timezone
 import pytz
 from uuid import uuid4
@@ -7,18 +8,20 @@ from . import auth
 from .. import config, db
 from ..models import User, Role
 from .forms import LoginForm, RegisrationForm, ActivationForm
-from app.auth.services import get_user_by_email, get_user_by_username, create_a_user
-
+from app.email import send_email
+from app.auth.services import get_user_by_email, get_user_by_username, create_a_user, redirect_user
+from app.settings import ACTIVATION_MAIL_SUBJECT
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
 
     if current_user.is_authenticated:
-        return redirect(url_for('main.all_users'))
+        return redirect_user()
     
     if form.validate_on_submit():
-        user: User = db.session.query(User).filter_by(email=form.email.data.lower()).first()
+        user = get_user_by_email(form.email.data.lower()) or get_user_by_username(form.email.data.lower())
+
         if user is not None and user.verify_password(form.password.data) and user.active:
             user.last_sign_in = datetime.utcnow().replace(tzinfo=pytz.utc)
             
@@ -46,12 +49,13 @@ def registration():
     form = RegisrationForm(request.form)
 
     if current_user.is_authenticated:
-        return redirect(url_for('main.all_users'))
+        return redirect_user()
 
     if request.method == 'POST' and form.validate():
         user = create_a_user(form)
 
-        flash('Successfully Registered. A mail has been sent please check your mailbox!!!')
+        send_email(user.email, ACTIVATION_MAIL_SUBJECT, 'mail/activation', user=user)
+        flash(f'Successfully Registered. A mail has been sent to {user.email}. please check your mailbox!!!')
 
         return redirect(url_for('auth.activate', username=user.username))
 

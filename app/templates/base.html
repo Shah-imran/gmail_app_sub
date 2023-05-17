@@ -47,6 +47,14 @@
                     <nav id="sidebarMenu" class="col-md-3 col-sm-12 col-lg-3 col-xl-2 d-md-block sidebar mb-auto">
                         <div class="sidebar-sticky">
                             <ul class="nav flex-column" id="sidebar-item">
+                                {% if current_user.role.name == 'User' %}
+                                <li class="nav-item-sidebar{{ '-active' if active_page=='dashboard' else '' }}">
+                                    <a class="nav-link" href="{{ url_for( 'main.dashboard') }}">
+                                        <i class="fa fa-calendar" aria-hidden="true"></i>&nbsp; &nbsp; Dashboard
+                                    </a>
+                                </li> 
+                                {% endif %}
+                                {% if current_user.role.name == 'Admin' %}
                                 <li class="nav-item-sidebar{{ '-active' if active_page == 'all_users' else '' }}">
                                     <a class="nav-link" href="{{ url_for('main.all_users') }}">
                                         <i class="fa fa-book" aria-hidden="true"></i>&nbsp; &nbsp; Users
@@ -57,7 +65,12 @@
                                         <i class="fa fa-calendar" aria-hidden="true"></i>&nbsp; &nbsp; Servers
                                     </a>
                                 </li> 
-                                
+                                {% endif %}
+                                <li class="nav-item-sidebar{{ '-active' if active_page=='packages' else '' }}">
+                                    <a class="nav-link" href="{{ url_for( 'main.packages') }}">
+                                        <i class="fa fa-calendar" aria-hidden="true"></i>&nbsp; &nbsp; Packages
+                                    </a>
+                                </li> 
                             </ul>
                         </div>
                     </nav>

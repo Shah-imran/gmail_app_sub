@@ -4,14 +4,14 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
-    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
-    MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))
-    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in \
-        ['true', 'on', '1']
+    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'mail.socialdroid.io')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT', '465'))
+    MAIL_USE_TLS = False
+    MAIL_USE_SSL = os.environ.get('MAIL_USE_SSL', '465')
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    FLASKY_MAIL_SUBJECT_PREFIX = '[Flasky]'
-    FLASKY_MAIL_SENDER = 'Flasky Admin <flasky@example.com>'
+    FLASKY_MAIL_SUBJECT_PREFIX = '[Socialdroid.io]'
+    FLASKY_MAIL_SENDER = 'Socialdroid <support@socialdroid.io>'
     FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     PER_PAGE_PAGINATION = 50
@@ -23,6 +23,7 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
+    MAIL_DEBUG=True
     TEMPLATES_AUTO_RELOAD=True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
@@ -47,5 +48,5 @@ config = {
     'default': DevelopmentConfig
 }
 
-# admin password = hkHK#j4@jh#@
+# admin password = u7UrcywDxVQ2QXp
 # email='orders@gmonster.net'

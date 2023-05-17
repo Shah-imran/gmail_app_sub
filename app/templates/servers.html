@@ -52,7 +52,7 @@
         </div>
         <div class="modal-footer mx-auto">
             <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-            <a id="delete_confirm" class="btn btn-danger btn-ok" type="button" data-id="" onclick="delete_user(this)">Delete</a>
+            <a id="delete_confirm" class="btn btn-danger btn-ok" type="button" data-id="" onclick="delete_server(this)">Delete</a>
         </div>
     </div>
     </div>
@@ -66,6 +66,82 @@
         for (var i = 0; i < arr.length; ++i)
             rv[i] = arr[i];
         return rv;
+    }
+
+    function change_modal(e){
+        if (e.dataset.type==='delete'){
+            document.getElementById('delete_confirm').dataset.id = e.dataset.id;
+        }
+    };
+
+    function change_subscription_date(e){
+        var server_id = e.dataset.id;
+        var date = e.value;
+
+        const request = new XMLHttpRequest();
+
+        request.open('POST', `/change-server-sub-date/${server_id}/${date}`, true);
+
+        request.onload = () => {
+
+            // Extract JSON data from request
+            const data = JSON.parse(request.responseText);
+            console.log(data.message)
+            alert(data.message)
+            // if (request.status===200){
+            //     window.location.reload(true);
+            // }
+        }
+
+        // Send request
+        request.send();
+    };
+
+    function handleSubComboboxChange(e) {
+        var server_id = e.dataset.id;
+        var sub_id = e.value;
+
+        const request = new XMLHttpRequest();
+
+        request.open('POST', `/change-sub-for-server/${server_id}/${sub_id}`, true);
+    
+        request.onload = () => {
+
+            // Extract JSON data from request
+            const data = JSON.parse(request.responseText);
+            console.log(data.message)
+            alert(data.message)
+            if (request.status===200){
+                window.location.reload(false);
+            }
+        }
+        
+        // Send request
+        request.send();
+    }
+
+
+    function handleUserComboboxChange(e) {
+        var server_id = e.dataset.id;
+        var user_id = e.value;
+
+        const request = new XMLHttpRequest();
+
+        request.open('POST', `/change-user-for-server/${server_id}/${user_id}`, true);
+    
+        request.onload = () => {
+
+            // Extract JSON data from request
+            const data = JSON.parse(request.responseText);
+            console.log(data.message)
+            alert(data.message)
+            if (request.status===200){
+                window.location.reload(false);
+            }
+        }
+        
+        // Send request
+        request.send();
     }
 
     function toggle_server_status(e) {
@@ -135,7 +211,6 @@
 
             // Extract JSON data from request
             const data = JSON.parse(request.responseText);
-            console.log('here');
             if (request.status===200){
                 t_data = toObject(data['data'])
                 console.log(t_data);
@@ -154,22 +229,26 @@
                             },
                             { 
                                 data: 'user',
-                                searchable: false,
+                                searchable: true,
                                 render: function ( data, type, row ) {
                                     var element = `<div class="form-group">
-                                    <select class="form-control" onchange="handleComboboxChange(this)">`;
+                                    <select class="form-control" data-id="${data.server_id}" onchange="handleUserComboboxChange(this)">`;
 
                                     for ( var item in data.all_users ) {
                                         var flag = ``;
                                         if (data.email === data.all_users[item].email) {
                                             flag = `selected`;
                                         }
-                                        element = element + `<option value="${data.all_users[item].id}" ${flag}>${data.all_users[item].email}</option>`;
+                                        element = element + `<option value="${data.all_users[item].id}" ${flag}="true" >
+                                            ${data.all_users[item].email}</option>`;
                                     }
 
                                     if (data.id === null) {
-                                        element = element + `<option value="-1" selected>None Selected</option>`;
+                                        element = element + `<option value="-1" selected="true">None Selected</option>`;
+                                    } else {
+                                        element = element + `<option value="-1">None Selected</option>`;
                                     }
+
                                     element = element + `</select></div>`;
 
                                     return element
@@ -178,13 +257,37 @@
                             { 
                                 data: 'sub_type' ,
                                 searchable: true,
-                                render: function (data, type, row) {
-                                    return
+                                render: function ( data, type, row ) {
+                                    var element = `<div class="form-group">
+                                    <select class="form-control" data-id="${data.server_id}" onchange="handleSubComboboxChange(this)">`;
+
+                                    for ( var item in data.all_subs ) {
+                                        var flag = ``;
+                                        if (data.name === data.all_subs[item].name) {
+                                            flag = `selected`;
+                                        }
+                                        element = element + `<option value="${data.all_subs[item].id}" ${flag}="true" >
+                                            ${data.all_subs[item].name}</option>`;
+                                    }
+
+                                    if (data.id === null) {
+                                        element = element + `<option value="-1" selected="true">None Selected</option>`;
+                                    } else {
+                                        element = element + `<option value="-1">None Selected</option>`;
+                                    }
+                                    element = element + `</select></div>`;
+
+                                    return element
                                 }
                             },
                             { 
                                 data: 'sub_end_date' ,
-                                searchable: true
+                                searchable: true,
+                                render: function ( data, type, row ) {
+                                    return `<input data-id="${data.id}" type="date" class="form-control" 
+                                        value="${data.date}" aria-label="Date" onchange="change_subscription_date(this)" 
+                                        aria-describedby="basic-addon1">`
+                                }
                             },
                             { 
                                 data: 'active',

@@ -1,7 +1,64 @@
 from flask import jsonify
+from datetime import datetime, timedelta
 from .. import config, db
 from app.models import User, Role, Server, Subscription
+from app.settings import (
+    DEFAULT_SUBSCRIPTION_ID, 
+    DEFAULT_TRIAL_DAYS,
+    DEFAULT_SUBSCRIPTION_DURATION
+)
 
+
+def change_server_sub_date(server_id, sub_end_date):
+    server: Server = db.session.query(Server).filter_by(id=server_id).first()
+
+    if not server:
+        return False
+    
+    server.sub_end_date = datetime.strptime(str(sub_end_date), '%Y-%m-%d')
+
+    db.session.add(server)
+    db.session.commit()
+
+    return True
+
+def change_sub_for_server(server_id , sub_id):
+    server: Server = db.session.query(Server).filter_by(id=server_id).first()
+
+    if not server:
+        return False
+    
+    if sub_id == -1:
+        server.subs_id = None
+        server.sub_end_date = None
+    else:
+        server.subs_id = sub_id
+        days_to_add = DEFAULT_TRIAL_DAYS if sub_id == DEFAULT_SUBSCRIPTION_ID \
+                    else DEFAULT_SUBSCRIPTION_DURATION
+        sub_end_date = datetime.utcnow().date() + timedelta(int(days_to_add))
+        server.sub_end_date = datetime.strptime(str(sub_end_date), '%Y-%m-%d')
+
+    db.session.add(server)
+    db.session.commit()
+
+    return True
+
+
+def get_all_subs():
+    subs: list[Subscription] = db.session.query(Subscription).all()
+
+    all_subs = []
+    for item in subs:
+        all_subs.append({
+            'id': item.id,
+            'name': item.name,
+            'device_count': item.device_count,
+            'desciption': item.description,
+            'time_created': str(item.time_created),
+            'time_updated': item.time_updated
+        })
+
+    return all_subs
 
 def delete_server(id):
     server: Server = db.session.query(Server).filter_by(id=id).first()
@@ -32,6 +89,29 @@ def change_server_active_status(flag, id):
     return True
 
 
+def change_user_for_server(server_id , user_id):
+    server: Server = db.session.query(Server).filter_by(id=server_id).first()
+
+    if not server:
+        return False
+    
+    if user_id == -1:
+        server.user_id = None
+        server.assigned = False
+        server.subs_id = None
+    else:
+        server.user_id = user_id
+        
+        change_sub_for_server(server_id, DEFAULT_SUBSCRIPTION_ID)
+
+        server.assigned = True
+
+    db.session.add(server)
+    db.session.commit()
+
+    return True
+
+
 def create_a_server(form):
     server: Server = Server()
     server.ip_address = form.ip_address.data
@@ -48,9 +128,8 @@ def get_all_servers():
     servers = db.session.query(Server).all()
     users = [ {'email': item['email'], 'id': item['active']['id']} for item in get_all_users() ]
     subs_list = [ 
-                {'name': item.name, 'id': item.id} 
-                for item in db.session.query(Subscription).all() 
-            ]
+        {'name': item['name'], 'id': item['id']} for item in get_all_subs() 
+    ]
     
     all_servers = []
     for item in servers: 
@@ -65,17 +144,22 @@ def get_all_servers():
                 'ip_address': item.ip_address,
                 'time_created': str(item.time_created),
                 'user': {
+                    'server_id': item.id,
                     'id': item.user_id,
                     'username': user.username if item.user_id else None,
                     'email': user.email if item.user_id else None,
                     'all_users': users
                 },
                 'sub_type': {
+                    'server_id': item.id,
                     'id': item.subs_id,
-                    'name': subs_type if item.subs_id else None,
+                    'name': subs_type.name if item.subs_id else None,
                     'all_subs': subs_list
                 },
-                'sub_end_date': str(item.sub_end_date) if item.subs_id else None,
+                'sub_end_date': {
+                    'id': item.id,
+                    'date': str(item.sub_end_date) if item.subs_id else None
+                },
                 'active': {
                     'active': item.active,
                     'id': item.id
@@ -86,7 +170,7 @@ def get_all_servers():
                 'description': item.description
             }
         )
-        print(all_servers)
+        
     return all_servers
 
 

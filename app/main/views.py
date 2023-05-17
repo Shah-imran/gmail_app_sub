@@ -1,13 +1,17 @@
-from flask import render_template, redirect, request, url_for, flash, current_app, jsonify
-from app.auth.services import create_a_user
-from app.main import services
-from app.main import main
-from app.main.forms import UserCreationForm, ServerCreationForm
-from .. import config, db
-from app.models import User, Role
 from flask_login import login_user, logout_user, login_required, current_user
 from datetime import datetime
 from sqlalchemy import inspect
+from flask import render_template, redirect, request, url_for, flash, current_app, jsonify
+from app.auth.services import create_a_user, reset_password, redirect_user
+from app.main import services
+from app.main import main
+from app.main.forms import UserCreationForm, ServerCreationForm, PasswordResetForm
+from .. import config, db
+from app.models import User, Role
+from app.utils import roles_required
+from app.email import send_email
+from app.settings import USER_CREATION_MAIL_SUBJECT
+
 
 
 def object_as_dict(obj):
@@ -25,17 +29,20 @@ def object_as_dict(obj):
 @main.route('/index')
 def index():
     if current_user.is_authenticated:
-        return redirect(url_for('main.all_users'))
+        return redirect_user()
     return redirect(url_for('auth.login'))
 
 
 @main.route('/all-users', methods=['GET', 'POST'])
 @login_required
+@roles_required('Admin')
 def all_users():
     form = UserCreationForm(request.form)
 
     if request.method == 'POST' and form.validate():
         user = create_a_user(form)
+
+        send_email(user.email, USER_CREATION_MAIL_SUBJECT, 'mail/account_creation', user=user, form=form)
         
         flash('Successfully Created')
     else:
@@ -47,6 +54,7 @@ def all_users():
 
 @main.route('/all-users/get-list', methods=['GET'])
 @login_required
+@roles_required('Admin')
 def get_all_users(): 
     all_users = services.get_all_users()
     
@@ -61,6 +69,7 @@ def get_all_users():
 
 @main.route('/change-user-status/<string:flag>/<int:id>', methods=['POST'])
 @login_required
+@roles_required('Admin')
 def change_user_status(flag, id):
     if not services.change_active_status(flag, id):
         return jsonify({"message": "User not found"}), 404
@@ -70,6 +79,7 @@ def change_user_status(flag, id):
 
 @main.route('/delete-user/<int:id>', methods=['DELETE'])
 @login_required
+@roles_required('Admin')
 def delete_user(id):
     if not services.delete_user(id):
         return jsonify({'message': 'User not found!'}), 401
@@ -79,6 +89,7 @@ def delete_user(id):
 
 @main.route('/servers', methods=['GET', 'POST'])
 @login_required
+@roles_required('Admin')
 def servers():
     form = ServerCreationForm(request.form)
 
@@ -95,6 +106,7 @@ def servers():
 
 @main.route('/servers/get-all', methods=['GET'])
 @login_required
+@roles_required('Admin')
 def get_all_servers(): 
     servers = services.get_all_servers()
     
@@ -107,8 +119,31 @@ def get_all_servers():
     }), 200
 
 
+@main.route('/change-user-for-server/<int:server_id>/<string:user_id>', methods=['POST'])
+@login_required
+@roles_required('Admin')
+def change_user_for_server(server_id , user_id): 
+    user_id = int(user_id)
+    if not services.change_user_for_server(server_id , user_id):
+        return jsonify({"message": "Server not found"}), 404
+    
+    return jsonify({"message": "User Changed"}), 200
+
+
+@main.route('/change-sub-for-server/<int:server_id>/<string:sub_id>', methods=['POST'])
+@login_required
+@roles_required('Admin')
+def change_sub_for_server(server_id , sub_id): 
+    sub_id = int(sub_id)
+    if not services.change_sub_for_server(server_id , sub_id):
+        return jsonify({"message": "Server not found"}), 404
+    
+    return jsonify({"message": "Subscription Changed"}), 200
+
+
 @main.route('/change-server-status/<string:flag>/<int:id>', methods=['POST'])
 @login_required
+@roles_required('Admin')
 def change_server_status(flag, id):
     if not services.change_server_active_status(flag, id):
         return jsonify({"message": "Server not found"}), 404
@@ -116,88 +151,77 @@ def change_server_status(flag, id):
     return jsonify({"message": "Status Changed"}), 200
 
 
+@main.route('/change-server-sub-date/<int:id>/<string:sub_end_date>', methods=['POST'])
+@login_required
+@roles_required('Admin')
+def change_server_sub_date(id, sub_end_date):
+    if not services.change_server_sub_date(id, sub_end_date):
+        return jsonify({"message": "Server not found"}), 404
+    
+    return jsonify({"message": "Subscription date updated"}), 200
+
+
 @main.route('/delete-server/<int:id>', methods=['DELETE'])
 @login_required
-def delete_server():
+@roles_required('Admin')
+def delete_server(id):
     if not services.delete_server(id):
         return jsonify({'message': 'Server not found!'}), 401
 
     return jsonify({"message": "Server Deleted!"}), 200
 
 
-# @main.route('/active_user', methods=['GET'], defaults={"page": 1})
-# @main.route('/active_user/<int:page>', methods=['GET'])
-# @login_required
-# def active_user(page):
-#     per_page = current_app.config["PER_PAGE_PAGINATION"]
-#     subscribers = db.session.query(Subscriber).filter_by(
-#         active=True).paginate(page, per_page, error_out=False)
-#     return render_template('active_user.html', subscribers=subscribers, page=page)
+@main.route('/subscription/get-all', methods=['GET'])
+@login_required
+def get_all_subs(): 
+    all_subs = services.get_all_subs()
+    
+    if not all_subs:
+        return jsonify({"message": "No results"}), 404
+    
+    return jsonify({
+        "message": "ok",
+        "data": all_subs
+    }), 200
 
 
-# @main.route('/active_users', methods=['GET'])
-# @login_required
-# def get_all_active_users():
-#     subscribers: Subscriber = db.session.query(Subscriber).filter_by(
-#         active=True).all()
-
-#     if not subscribers:
-#         return jsonify({"result": "No results"}), 404
-
-#     data = []
-#     for item in subscribers:
-
-#         data.append({
-#             "email": item.email,
-#             "machine_uuid": item.machine_uuid,
-#             "processor_id": item.processor_id,
-#             "deactivate": {
-#                 "id": item.id,
-#                 "end_date": str(item.end_date)
-#             },
-#             "last_sign_in": str(item.last_sign_in),
-#             "end_date": str(item.end_date)
-#         })
-
-#     return jsonify({
-#         "result": "ok",
-#         "data": data
-#     }), 200
-
-# @main.route('/activate_user/<string:end_date>/<int:id>', methods=['POST'])
-# @login_required
-# def activate_user(end_date, id):
-#     sub = db.session.query(Subscriber).get(id)
-#     if not sub:
-#         return jsonify({'message': 'User not found!'}), 401
-#     sub.end_date = datetime.strptime(end_date, '%Y-%m-%d')
-#     sub.active = True
-
-#     db.session.add(sub)
-#     db.session.commit()
-#     return jsonify({"message": "User Activated!"}), 200
+@main.route('/packages', methods=['GET'])
+@login_required
+def packages():
+    return render_template('packages.html')
 
 
-# @main.route('/change_subscription/<string:end_date>/<int:id>', methods=['POST'])
-# @login_required
-# def change_subscription(end_date, id):
-#     sub = db.session.query(Subscriber).get(id)
-#     if not sub:
-#         return jsonify({'message': 'User not found!'}), 401
-#     sub.end_date = datetime.strptime(end_date, '%Y-%m-%d')
-#     # print(sub.end_date)
-#     db.session.add(sub)
-#     db.session.commit()
-#     return jsonify({"message": "Date Changed!"}), 200
+@main.route('/dashboard', methods=['GET', 'POST'])
+@login_required
+@roles_required('User')
+def dashboard():
+    form = PasswordResetForm(request.form)
+
+    if request.method == 'POST' and form.validate():
+        user = reset_password(form)
+
+        flash('Password changed successfully.')
+    else:
+        if request.method != 'GET':
+            flash("Form validation failed.")
+
+    return render_template('dashboard.html', form=form)
 
 
-# @main.route('/deactivate_user/<int:id>', methods=['POST'])
-# @login_required
-# def deactivate_user(id):
-#     sub = db.session.query(Subscriber).get(id)
-#     if not sub:
-#         return jsonify({'message': 'User not found!'}), 401
-#     sub.active = False
-#     db.session.add(sub)
-#     db.session.commit()
-#     return jsonify({"message": "User deactivated!"}), 200
+@main.route('/get-user-server-sub-info', methods=['GET'])
+@login_required
+def get_user_server_sub_info():
+    user = db.session.query(User).get(current_user.get_id())
+
+    user_data = []
+    for item in user.servers:
+        user_data.append({
+            'server': item.ip_address, 
+            'sub_end_date': str(item.sub_end_date), 
+            'sub_type':item.sub_type.name
+        })
+
+    return jsonify({
+        "message": "ok",
+        "data": user_data
+    }), 200

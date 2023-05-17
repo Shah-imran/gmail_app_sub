@@ -1,0 +1,7 @@
+Dear {{ user.username }},
+
+Here is your activation code - {{ user.activation_code }}
+
+Regards,
+
+The Socialdroid Team
