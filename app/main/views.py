@@ -13,7 +13,6 @@ from app.email import send_email
 from app.settings import USER_CREATION_MAIL_SUBJECT
 
 
-
 def object_as_dict(obj):
     """[summary]
     Args:
