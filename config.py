@@ -47,6 +47,3 @@ config = {
 
     'default': DevelopmentConfig
 }
-
-# admin password = u7UrcywDxVQ2QXp
-# email='orders@gmonster.net'
