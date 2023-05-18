@@ -10,9 +10,9 @@ class Config:
     MAIL_USE_SSL = os.environ.get('MAIL_USE_SSL', '465')
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    FLASKY_MAIL_SUBJECT_PREFIX = '[Socialdroid.io]'
-    FLASKY_MAIL_SENDER = 'Socialdroid <support@socialdroid.io>'
-    FLASKY_ADMIN = os.environ.get('ADMIN')
+    MAIL_SUBJECT_PREFIX = '[Socialdroid.io]'
+    MAIL_SENDER = 'Socialdroid <support@socialdroid.io>'
+    ADMIN = os.environ.get('ADMIN')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     PER_PAGE_PAGINATION = 50
 
