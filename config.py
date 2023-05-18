@@ -12,7 +12,7 @@ class Config:
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     FLASKY_MAIL_SUBJECT_PREFIX = '[Socialdroid.io]'
     FLASKY_MAIL_SENDER = 'Socialdroid <support@socialdroid.io>'
-    FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
+    FLASKY_ADMIN = os.environ.get('ADMIN')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     PER_PAGE_PAGINATION = 50
 
