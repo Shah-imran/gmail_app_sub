@@ -1,6 +1,6 @@
 Dear {{ user.username }},
 
-Your login creds for Socialdroid.io are -
+Your login creds for Socialdroid.io are 
       username - {{ user.username }}
       password - {{ form.password.data }}
 
