@@ -9,6 +9,22 @@ from app.settings import (
 )
 
 
+def get_user_server_sub_info(user_id):
+    user = db.session.query(User).get(user_id)
+
+    if not user:
+        return False
+    
+    user_data = []
+    for item in user.servers:
+        user_data.append({
+            'server': item.ip_address, 
+            'sub_end_date': str(item.sub_end_date), 
+            'sub_type':item.sub_type.name
+        })
+
+    return user_data
+
 def change_server_sub_date(server_id, sub_end_date):
     server: Server = db.session.query(Server).filter_by(id=server_id).first()
 

@@ -1,13 +1,37 @@
 import pytz
 from uuid import uuid4
 from datetime import datetime
+from sqlalchemy import and_
 from flask import redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
 
 from .. import config, db
 from ..models import User, Role
-from app.settings import DEFAULT_USER_ROLE_ID
+from app.settings import DEFAULT_USER_ROLE_ID, DEFAULT_API_ROLE_ID
 
+
+def cross_auth_for_server(username, password):
+    user = get_user_by_email(username) or get_user_by_username(password)
+
+    if user is not None and user.verify_password(password):
+        return True
+    else:
+        return False
+
+def api_authentication(username, password):
+    user: User = db.session.query(User).filter(
+                and_(
+                    User.username==username, 
+                    User.role_id==DEFAULT_API_ROLE_ID
+                )
+            ).first()
+
+    if user and user.verify_password(password):
+        login_user(user, 0)
+        return True
+    else:
+        return False
+    
 
 def redirect_user():
     path = 'main.dashboard' if current_user.role.name == 'User' else 'main.all_users'

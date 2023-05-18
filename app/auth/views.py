@@ -10,7 +10,7 @@ from ..models import User, Role
 from .forms import LoginForm, RegisrationForm, ActivationForm
 from app.email import send_email
 from app.auth.services import get_user_by_email, get_user_by_username, create_a_user, redirect_user
-from app.settings import ACTIVATION_MAIL_SUBJECT
+from app.settings import ACTIVATION_MAIL_SUBJECT, DEFAULT_API_ROLE_ID
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -22,7 +22,9 @@ def login():
     if form.validate_on_submit():
         user = get_user_by_email(form.email.data.lower()) or get_user_by_username(form.email.data.lower())
 
-        if user is not None and user.verify_password(form.password.data) and user.active:
+        if user is not None and user.verify_password(form.password.data) \
+                and user.active and user.role_id != DEFAULT_API_ROLE_ID:
+
             user.last_sign_in = datetime.utcnow().replace(tzinfo=pytz.utc)
             
             db.session.add(user)
