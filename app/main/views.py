@@ -232,12 +232,12 @@ def get_user_server_sub_info():
     }), 200
 
 
-@main.route('/api/get-user-server-sub-info/<string:username_or_password>', methods=['GET'])
+@main.route('/api/get-user-server-sub-info/<string:username_or_email>', methods=['GET'])
 @basic_auth_required
 @roles_required(['Api'])
-def get_user_server_sub_info_api(username_or_password):
-    user: User = get_user_by_username(username_or_password) \
-                    or get_user_by_email(username_or_password)
+def get_user_server_sub_info_api(username_or_email):
+    user: User = get_user_by_username(username_or_email) \
+                    or get_user_by_email(username_or_email)
     
     user_data = services.get_user_server_sub_info(user.id)
     
