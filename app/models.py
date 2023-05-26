@@ -71,7 +71,7 @@ class Subscription(db.Model):
 class Server(db.Model):
     __tablename__ = "servers"
     id = Column(Integer, primary_key=True)
-    ip_address = Column(String(16), nullable=False, unique=True)
+    ip_address = Column(String(16), nullable=False)
     active = Column(Boolean, default=False, nullable=False)
     assigned = Column(Boolean, default=False, nullable=False)
     description = Column(Text, nullable=True)
