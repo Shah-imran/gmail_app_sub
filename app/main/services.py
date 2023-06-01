@@ -142,7 +142,13 @@ def create_a_server(form):
 
 def get_all_servers():
     servers = db.session.query(Server).all()
-    users = [ {'email': item['email'], 'id': item['active']['id']} for item in get_all_users() ]
+    users = [ 
+            {
+                'email': item['email'], 
+                'id': item['active']['id']
+            } 
+            for item in get_all_users() if item['active']['active'] 
+        ]
     subs_list = [ 
         {'name': item['name'], 'id': item['id']} for item in get_all_subs() 
     ]
