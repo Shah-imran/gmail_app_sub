@@ -231,6 +231,9 @@
                                 data: 'user',
                                 searchable: true,
                                 render: function ( data, type, row ) {
+                                    if (type === 'filter' || type ==='sort') {
+                                        return data.email;
+                                    }
                                     var element = `<div class="form-group">
                                     <select class="form-control" data-id="${data.server_id}" onchange="handleUserComboboxChange(this)">`;
 
