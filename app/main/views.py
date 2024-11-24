@@ -33,7 +33,7 @@ def pending_request(page):
     per_page = current_app.config["PER_PAGE_PAGINATION"]
 
     subscribers = db.session.query(Subscriber).paginate(
-        page, per_page, error_out=False)
+        page=page, per_page=per_page, error_out=False)
     return render_template('pending_request.html', subscribers=subscribers, page=page)
 
 
@@ -73,7 +73,7 @@ def get_all_users():
 def active_user(page):
     per_page = current_app.config["PER_PAGE_PAGINATION"]
     subscribers = db.session.query(Subscriber).filter_by(
-        active=True).paginate(page, per_page, error_out=False)
+        active=True).paginate(page=page, per_page=per_page, error_out=False)
     return render_template('active_user.html', subscribers=subscribers, page=page)
 
 
